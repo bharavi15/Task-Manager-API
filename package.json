@@ -21,8 +21,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "startdb": "F:/Courses/mongodb/bin/mongod.exe --dbpath F:/Courses/mongodb-data",
-    "start": "node src/index.js",
-    "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
+    "start": "env-cmd -f ./config/prod.env node src/server.js",
+    "dev": "env-cmd -f ./config/dev.env nodemon src/server.js",
     "robo": "F:/Courses/robo3t/robo3t.exe"
   },
   "author": "",
