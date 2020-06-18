@@ -12,15 +12,14 @@ router.post('/tasks', auth, async (req, res, next) => {
 		await task.save()
 		res.status(201).send(task)
 	} catch (error) {
-		console.log(error)
 		res.status(400).send(error)
 	}
 })
+
 //GET /tasks
 //GET /tasks?sortBy=createdAt_desc
 //GET /tasks?limit=5&skip=5
 //GET /tasks?completed=true
-
 router.get('/tasks', auth, async (req, res) => {
 	const match = {},
 		sort = {}

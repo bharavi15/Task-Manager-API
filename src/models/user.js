@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const otplib = require('otplib')
+const authenticator = otplib.authenticator;
 const Task = require('./task')
 const userSchema = new mongoose.Schema({
     name: {
@@ -40,28 +42,34 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    tokens:[{
-        token:{
+    tokens: [{
+        token: {
             type: String,
-            required:true
+            required: true
         }
     }],
-    avatar:{
-        type:Buffer
+    avatar: {
+        type: Buffer
+    },
+    totpSecret: {
+        type: String
     }
-},{timestamps:true})
-userSchema.virtual('tasks',{
-    ref:'Task',
-    localField:'_id',
-    foreignField:'owner'
+}, {
+    timestamps: true
 })
-userSchema.methods.toJSON = function(){
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+})
+userSchema.methods.toJSON = function () {
     const user = this
-    const userObject= user.toObject()
+    const userObject = user.toObject()
     delete userObject.password
     delete userObject.tokens
     delete userObject.avatar
-    
+    delete userObject.totpSecret
+
     return userObject
 }
 userSchema.methods.generateAuthToken = async function () {
@@ -69,12 +77,14 @@ userSchema.methods.generateAuthToken = async function () {
     const token = jwt.sign({
         _id: user._id.toString()
     }, process.env.JWT_SECRET_KEY)
-    user.tokens= user.tokens.concat({token})
+    user.tokens = user.tokens.concat({
+        token
+    })
     await user.save()
     return token
 }
 
-userSchema.statics.findByCredentials = async (email, password) => {
+userSchema.statics.findByCredentials = async (email, password, totp) => {
     const user = await User.findOne({
         email
     })
@@ -84,6 +94,10 @@ userSchema.statics.findByCredentials = async (email, password) => {
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
         throw new Error('unable to login')
+    }
+    if (user.totpSecret) {
+        if (authenticator.generate(user.totpSecret) !== totp)
+            throw new Error('unable to login because of invalid OTP')
     }
     return user
 }
@@ -95,9 +109,11 @@ userSchema.pre('save', async function (next) {
     next();
 })
 
-userSchema.pre('remove', async function(next){
+userSchema.pre('remove', async function (next) {
     const user = this;
-    await Task.deleteMany({owner:user._id})
+    await Task.deleteMany({
+        owner: user._id
+    })
     next();
 })
 
