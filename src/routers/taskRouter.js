@@ -31,6 +31,16 @@ router.get('/tasks', auth, async (req, res) => {
 		sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
 	}
 	try {
+		await req.user.populate({
+			path: 'numTasks',
+			match,
+			options: {
+				limit: parseInt(req.query.limit),
+				skip: parseInt(req.query.skip),
+				sort
+			}
+		}).execPopulate()
+		console.log(req.user.numTasks)
 		//const tasks = await Task.find({owner:req.user._id})
 		await req.user.populate({
 			path: 'tasks',
@@ -41,6 +51,8 @@ router.get('/tasks', auth, async (req, res) => {
 				sort
 			}
 		}).execPopulate()
+		if (req.query.count==='true') 
+			return res.status(200).send({taskCount:req.user.tasks.length});
 		res.status(200).send(req.user.tasks);
 	} catch (error) {
 		res.status(500).send(error)
@@ -67,7 +79,7 @@ router.get('/tasks/:id', auth, async (req, res) => {
 
 router.patch('/tasks/:id', auth, async (req, res, next) => {
 	const updates = Object.keys(req.body);
-	const allowedUpdates = ['description', 'completed']
+	const allowedUpdates = ['description', 'completed','title']
 	const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 	if (!isValidOperation) {
 		return res.status(400).send({

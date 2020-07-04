@@ -1,26 +1,29 @@
-
-const sgMail= require('@sendgrid/mail')
+const sgMail = require('@sendgrid/mail')
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-sendWelcomeEmail=(email,name)=>{
-    sgMail.send({
-        to:email,
-        from:'reminder.taskmanger@gmail.com',
-        subject:'Welcome to Task Manager App',
-        text:'Hi '+name+'.\nThanks for joining in!'
-    })
+sendWelcomeEmail = (email, name) => {
+	if (process.env.SEND_EMAIL === 'true') {
+		sgMail.send({
+			to: email,
+			from: process.env.FROM_EMAIL,
+			subject: `Welcome to ${process.env.APP_NAME}`,
+			text: 'Hi ' + name + '.\nThanks for joining in!'
+		})
+	}
 }
 
-sendCancellationEmail=(email,name)=>{
-    sgMail.send({
-        to:email,
-        from:'reminder.taskmanger@gmail.com',
-        subject:'Thanks for using Task Manager App',
-        text:'Hi '+name+'.\nYour account has been deleted.\nIs there something we could do to improve our service?'
-    })
+sendCancellationEmail = (email, name) => {
+	if (process.env.SEND_EMAIL === 'true') {
+		sgMail.send({
+			to: email,
+			from: process.env.FROM_EMAIL,
+			subject: `Thanks for using ${process.env.APP_NAME}`,
+			text: 'Hi ' + name + '.\nYour account has been deleted.\nIs there something we could do to improve our service?'
+		})
+	}
 }
-module.exports ={
-    sendWelcomeEmail,
-    sendCancellationEmail
+module.exports = {
+	sendWelcomeEmail,
+	sendCancellationEmail
 }

@@ -15,15 +15,22 @@
     "validator": "^13.0.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "env-cmd": "^10.1.0",
-    "nodemon": "^2.0.4"
+    "jest": "^26.0.1",
+    "nodemon": "^2.0.4",
+    "nyc": "^15.1.0",
+    "supertest": "^4.0.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "env-cmd -f ./config/test.env jest --watch --runInBand --detectOpenHandles --coverage",
     "startdb": "F:/Courses/mongodb/bin/mongod.exe --dbpath F:/Courses/mongodb-data",
     "start": "env-cmd -f ./config/prod.env node src/server.js",
     "dev": "env-cmd -f ./config/dev.env nodemon src/server.js",
     "robo": "F:/Courses/robo3t/robo3t.exe"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "author": "",
   "license": "ISC"
